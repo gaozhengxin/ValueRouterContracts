@@ -1,7 +1,7 @@
 
 ## 测试合约地址
-- AVAX - https://snowtrace.io/address/0xf8d0f5f8bba78f1d91b8576c4c5c8399b0bdd33f#code
-- Arbitrum - https://arbiscan.io/address/0xFA08bc4dc51eD8DB9898D872241a593a53768C3F#code
+- AVAX - [0x916e4718dda1bc22ad40f89111c5447c9eacc53f](https://snowtrace.io/address/0x916e4718dda1bc22ad40f89111c5447c9eacc53f#code)
+- Arbitrum - [0x916e4718dda1bc22ad40f89111c5447c9eacc53f](https://arbiscan.io/address/0x916e4718dda1bc22ad40f89111c5447c9eacc53f#code)
 
 ## Functions
 ### swap(0xf9f288b5) payable
