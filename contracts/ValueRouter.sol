@@ -412,6 +412,7 @@ contract ValueRouter is AdminControl {
         emit TakeFee(to, amount);
     }
 
+    /// @param recipient set recipient to address(0) to save token in the router contract.
     function zeroExSwap(
         bytes memory swapcalldata,
         uint256 callgas,
@@ -421,50 +422,54 @@ contract ValueRouter is AdminControl {
         uint256 guaranteedBuyAmount,
         address recipient
     ) public payable returns (uint256 boughtAmount) {
-        if (buyToken == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
-            // convert usdc to eth
-            uint256 buyToken_bal_0 = address(this).balance;
-            _zeroExSwap(swapcalldata, callgas);
-            uint256 buyToken_bal_1 = address(this).balance;
-            boughtAmount = buyToken_bal_1 - buyToken_bal_0;
-            require(
-                boughtAmount >= guaranteedBuyAmount,
-                "swap output not enough"
-            );
-            if (recipient == address(0)) {
-                return boughtAmount;
-            }
-            (bool succ, ) = recipient.call{value: boughtAmount}("");
-            require(succ, "send eth failed");
-        } else {
-            // convert usdc to erc20
-            uint256 buyToken_bal_0 = IERC20(buyToken).balanceOf(address(this));
-            // approve
+        // before swap
+        // approve
+        if (sellToken != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             require(
                 IERC20(sellToken).approve(zeroEx, sellAmount),
                 "erc20 approve failed"
             );
-            _zeroExSwap(swapcalldata, callgas);
+        }
+        // check balance 0
+        uint256 buyToken_bal_0;
+        if (buyToken == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            buyToken_bal_0 = address(this).balance;
+        } else {
+            buyToken_bal_0 = IERC20(buyToken).balanceOf(address(this));
+        }
+
+        _zeroExSwap(swapcalldata, callgas);
+
+        // after swap
+        // cancel approval
+        if (sellToken != 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
             // cancel approval
             require(
                 IERC20(sellToken).approve(zeroEx, 0),
                 "erc20 cancel approval failed"
             );
-            uint256 buyToken_bal_1 = IERC20(buyToken).balanceOf(address(this));
-            boughtAmount = buyToken_bal_1 - buyToken_bal_0;
-            require(
-                boughtAmount >= guaranteedBuyAmount,
-                "swap output not enough"
-            );
-            if (recipient == address(0)) {
-                return boughtAmount;
-            }
-            bool succ = IERC20(buyToken).transfer(
-                recipient,
-                buyToken_bal_1 - buyToken_bal_0
-            );
+        }
+        // check balance 1
+        uint256 buyToken_bal_1;
+        if (buyToken == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            buyToken_bal_1 = address(this).balance;
+        } else {
+            buyToken_bal_1 = IERC20(buyToken).balanceOf(address(this));
+        }
+        boughtAmount = buyToken_bal_1 - buyToken_bal_0;
+        require(boughtAmount >= guaranteedBuyAmount, "swap output not enough");
+        // send token to recipient
+        if (recipient == address(0)) {
+            return boughtAmount;
+        }
+        if (buyToken == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE) {
+            (bool succ, ) = recipient.call{value: boughtAmount}("");
+            require(succ, "send eth failed");
+        } else {
+            bool succ = IERC20(buyToken).transfer(recipient, boughtAmount);
             require(succ, "erc20 transfer failed");
         }
+
         return boughtAmount;
     }
 
