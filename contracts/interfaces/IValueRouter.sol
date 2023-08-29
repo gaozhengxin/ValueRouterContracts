@@ -15,6 +15,8 @@ interface IValueRouter {
     event Cancel(bytes32 router_tx_id);
 
     function swap(
+        address tokenIn,
+        uint256 inAmount,
         Call calldata localSwapCall,
         uint8 destDomain,
         SwapArgs calldata destSwapArgs
