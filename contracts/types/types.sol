@@ -13,6 +13,8 @@ struct SwapArgs {
     address recipient;
     uint256 deadline;
     address refundAddress;
+    uint16 relayFee; // premille
+    uint16 brokerage; // premille
 }
 
 struct MessageWithAttestation {

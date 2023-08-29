@@ -19,6 +19,8 @@ library SwapMessageCodec {
     uint8 public constant RECIPIENT_END_INDEX = 132;
     uint8 public constant DEADLINE_END_INDEX = 164;
     uint8 public constant REFUNDADDRESS_END_INDEX = 196;
+    uint8 public constant RELAYFEE_END_INDEX = 198;
+    uint8 public constant BROKERAGE_END_INDEX = 200;
 
     function encode(
         SwapMessage memory swapMessage
@@ -31,7 +33,9 @@ library SwapMessageCodec {
                 swapMessage.swapArgs.minOutput,
                 swapMessage.swapArgs.recipient.addressToBytes32(),
                 swapMessage.swapArgs.deadline,
-                swapMessage.swapArgs.refundAddress.addressToBytes32()
+                swapMessage.swapArgs.refundAddress.addressToBytes32(),
+                swapMessage.swapArgs.relayFee,
+                swapMessage.swapArgs.brokerage
             );
     }
 
@@ -45,6 +49,8 @@ library SwapMessageCodec {
         bytes32 recipient;
         uint256 deadline;
         bytes32 refundAddress;
+        uint16 relayFee;
+        uint16 brokerage;
         assembly {
             version := mload(add(message, VERSION_END_INDEX))
             bridgeNonceHash := mload(add(message, BRIDGENONCEHASH_END_INDEX))
@@ -53,6 +59,8 @@ library SwapMessageCodec {
             recipient := mload(add(message, RECIPIENT_END_INDEX))
             deadline := mload(add(message, DEADLINE_END_INDEX))
             refundAddress := mload(add(message, REFUNDADDRESS_END_INDEX))
+            relayFee := mload(add(message, RELAYFEE_END_INDEX))
+            brokerage := mload(add(message, BROKERAGE_END_INDEX))
         }
         return
             SwapMessage(
@@ -63,7 +71,9 @@ library SwapMessageCodec {
                     minOutput,
                     recipient.bytes32ToAddress(),
                     deadline,
-                    refundAddress.bytes32ToAddress()
+                    refundAddress.bytes32ToAddress(),
+                    relayFee,
+                    brokerage
                 )
             );
     }
